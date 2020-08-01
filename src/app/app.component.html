@@ -1,9 +1,7 @@
-d3 test
-<div class="row" >
-  <div class="col">
-    <ng-container *ngIf="showGraph">
-      <force-directed-graph 
-        [parameter$]='changeCity$' [data]='asistenciasList'></force-directed-graph>
-    </ng-container>
-  </div>
-</div>
+<ng-container *ngIf="showGraph">
+  <force-directed-graph
+    [parameter$]='changeCity$' [data]='asistenciasList'></force-directed-graph>
+  <!--<force-directed-graph-svg *ngIf="isSVG"
+    [parameter$]='changeCity$' [data]='asistenciasList'></force-directed-graph-svg>-->
+</ng-container>
+

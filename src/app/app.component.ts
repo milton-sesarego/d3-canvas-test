@@ -12,13 +12,9 @@ export class AppComponent {
   title = 'd3-canvas-test';
   public showGraph = true;
   public asistenciasList: any[];
-
   public changeCity$ = new BehaviorSubject<string>('no_definido');
 
   constructor(){
     this.asistenciasList = data;
-    // console.log(data)
   }
-
-
 }

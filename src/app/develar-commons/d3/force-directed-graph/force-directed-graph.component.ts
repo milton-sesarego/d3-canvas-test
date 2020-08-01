@@ -12,27 +12,22 @@ import * as d3 from 'd3';
 export class ForceDirectedGraphComponent implements AfterViewInit {
   @ViewChild('canvasEl', {static: false}) canvasEl: ElementRef;
   private ctx: CanvasRenderingContext2D;
-  //
+
   @Input() data: Array<any> = [];
   @Input() parameter$: Observable<string>;
   public showGraph = true;
   private defaultView = true;
   private actualParam = 'no_definido';
-  links: any;
-  nodes: any;
-  simulation: any;
-  link: any;
-  node: any;
-  types;
-  height = 500;//3500;
-  width = 500;//2400;
+  canvas;
+  simulation;
+  links; nodes;
+  link; node; types;
+  height = 800;
+  width = 800;
   nodeRadius = 5;
   transform;
-  canvas;
   color;
   font = 20;
-
-/////////////
 
   constructor() { }
 
@@ -40,12 +35,17 @@ export class ForceDirectedGraphComponent implements AfterViewInit {
     this.color = d3.scaleOrdinal(d3.schemeCategory10);
     this.ctx = (this.canvasEl.nativeElement as HTMLCanvasElement).getContext('2d');
     this.canvas = this.ctx.canvas;
-    this.canvas.width  = 500;
-    this.canvas.height = 500;
-    if(this.parameter$){
+    this.canvas.style.width = '100%';
+    this.canvas.style.height = '100%';
+
+    this.canvas.width  = this.canvas.offsetWidth;
+    this.canvas.height = this.height;
+    this.width = this.canvas.width;
+
+    if (this.parameter$){
       this.parameter$.subscribe(param => {
-        this.refreshGraph(param)
-      })
+        this.refreshGraph(param);
+      });
     }
   }
 
@@ -64,12 +64,12 @@ export class ForceDirectedGraphComponent implements AfterViewInit {
             .on('zoom', zoomed));
 
     this.simulation = d3.forceSimulation(this.nodes)
-    .force("link", d3.forceLink( this.links).id( d => d['id']) )
-    .force("charge", d3.forceManyBody().strength(-300))
-    .force("center", d3.forceCenter(this.width/2, this.height/2))
-    .force("x", d3.forceX())
-    .force("y", d3.forceY())
-    .on("tick", simulationUpdate);
+      .force("link", d3.forceLink( this.links).id( d => d['id']) )
+      .force("charge", d3.forceManyBody().strength(-300))
+      .force("center", d3.forceCenter(this.width/2, this.height/2))
+      .force("x", d3.forceX())
+      .force("y", d3.forceY())
+      .on("tick", simulationUpdate);
 
     function simulationUpdate() {
       var fontSize = self.font * self.transform[2];
@@ -77,6 +77,7 @@ export class ForceDirectedGraphComponent implements AfterViewInit {
       self.ctx.clearRect(0, 0, self.width, self.height);
       self.ctx.translate(self.transform.x, self.transform.y);
       self.ctx.scale(self.transform.k, self.transform.k);
+
       // Draw edges
       self.links.forEach(function(d) {
         self.ctx.beginPath();
@@ -84,8 +85,9 @@ export class ForceDirectedGraphComponent implements AfterViewInit {
         self.ctx.lineTo(d.target.x, d.target.y);
         self.ctx.lineWidth = Math.sqrt(d.value);
         self.ctx.strokeStyle = self.color(d.type);
-        self.ctx.lineWidth = 2;
+        self.ctx.lineWidth = 1.5;
         self.ctx.stroke();
+
       });
       // Draw nodes
       self.nodes.forEach(function(d, i) {
@@ -100,15 +102,21 @@ export class ForceDirectedGraphComponent implements AfterViewInit {
         self.ctx.stroke();
         self.ctx.fillStyle = '#fff';
         self.ctx.fill();
+        // Text
+        self.ctx.font = 'bold ' + (fontSize) + 'px sans-serif"';
+        self.ctx.strokeStyle = 'white';
+        self.ctx.lineWidth = 2;
+        self.ctx.lineJoin = 'miter';
+        self.ctx.miterLimit = 2;
+        self.ctx.strokeText(d.id, d.x, d.y - 10);
         self.ctx.fillStyle = '#000';
-        self.ctx.font = (fontSize) + 'px sans-serif"';
         self.ctx.fillText(d.id, d.x, d.y - 10);
       });
       self.ctx.restore();
     }
 
     function zoomed() {
-      this.transform = d3.event.transform;
+      self.transform = d3.event.transform;
       simulationUpdate();
     }
 
@@ -116,7 +124,7 @@ export class ForceDirectedGraphComponent implements AfterViewInit {
     function dragSubject() {
       const x = self.transform.invertX(d3.event.x);
       const y = self.transform.invertY(d3.event.y);
-      const node = self.findNode(self.nodes, x, y, self.nodeRadius);
+      const node = self.findNode(self.nodes, x, y, self.nodeRadius+5);
       if (node) {
         node.x =  self.transform.applyX(node.x);
         node.y = self.transform.applyY(node.y);
